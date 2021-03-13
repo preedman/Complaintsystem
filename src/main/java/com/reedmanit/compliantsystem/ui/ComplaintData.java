@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -23,9 +25,11 @@ public class ComplaintData extends AbstractTableModel {
     
     private Object data [] [];
     
-    String columnNames[] = new String[] {    "Received On", "Source", "Reference", "Details", "Priority", "Status", "Closed On"  };
+    String columnNames[] = new String[] {    "Received On", "Source", "Reference", "Details", "Priority", "Status", "Closed On", "Edit"  };
     
-    Class types[] = new Class[] {     LocalDate.class, String.class, String.class, String.class,     String.class, String.class, LocalDate.class  };
+    Class types[] = new Class[] {     LocalDate.class, String.class, String.class, String.class,     String.class, String.class, LocalDate.class, Object.class  };
+    
+    
     
     public ComplaintData() {
         try {
@@ -76,6 +80,7 @@ public class ComplaintData extends AbstractTableModel {
             data[x][4] = c.getThePriority();
             data[x][5] = c.getTheStatus();
             data[x][6] = c.getClosedOn();
+            data[x][7] = "Edit";
             
             x++;
             

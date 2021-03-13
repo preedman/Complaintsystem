@@ -5,11 +5,18 @@
  */
 package com.reedmanit.compliantsystem.ui;
 
+import javax.swing.JCheckBox;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 /**
  *
  * @author paul
  */
 public class Main extends javax.swing.JFrame {
+    
+    ListSelectionModel listSelectionModel;
 
     /**
      * Creates new form Main
@@ -63,12 +70,21 @@ public class Main extends javax.swing.JFrame {
         ComplaintData theData = new ComplaintData();
         complaintTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
         complaintTable.setModel(theData);
+        //listSelectionModel = complaintTable.getSelectionModel();
+        //listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+        //complaintTable.setSelectionModel(listSelectionModel);
+        complaintTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        //
+        complaintTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        complaintTable.getColumn("Edit").setCellRenderer(new ButtonRenderer());
+        complaintTable.getColumn("Edit").setCellEditor(new ButtonEditor(new JCheckBox()));
         jScrollPane1.setViewportView(complaintTable);
 
         caseTabPane.addTab("My Cases", jScrollPane1);
 
         desktopPane.add(caseTabPane);
-        caseTabPane.setBounds(50, 70, 700, 240);
+        caseTabPane.setBounds(10, 30, 850, 370);
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
@@ -137,13 +153,13 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
+            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 878, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(desktopPane, javax.swing.GroupLayout.PREFERRED_SIZE, 486, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 46, Short.MAX_VALUE))
         );
 
         pack();
@@ -186,6 +202,20 @@ public class Main extends javax.swing.JFrame {
                 new Main().setVisible(true);
             }
         });
+    }
+    class SharedListSelectionHandler implements ListSelectionListener {
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            System.out.println("Row selected !!");
+            ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+            
+            int firstIndex = e.getFirstIndex();
+            int lastIndex = e.getLastIndex();
+            
+            System.out.println("first " + firstIndex);
+        }
+
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

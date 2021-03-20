@@ -25,15 +25,16 @@ public class ComplaintData extends AbstractTableModel {
     
     private Object data [] [];
     
-    String columnNames[] = new String[] {    "Received On", "Source", "Reference", "Details", "Priority", "Status", "Closed On", "Edit"  };
+    String columnNames[] = new String[] {    "Received On", "Source", "Reference", "Details", "Priority", "Status", "Closed On" };
     
-    Class types[] = new Class[] {     LocalDate.class, String.class, String.class, String.class,     String.class, String.class, LocalDate.class, Object.class  };
+    Class types[] = new Class[] {     LocalDate.class, String.class, String.class, String.class,     String.class, String.class, LocalDate.class };
     
     
     
     public ComplaintData() {
         try {
             updateData();
+            
         } catch (Exception ex) {
             Logger.getLogger(ComplaintData.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -59,7 +60,29 @@ public class ComplaintData extends AbstractTableModel {
       return columnNames[col];
     }
     
+    public Complaint getValueAtRow(int row) {
+        
+        Complaint c = new Complaint();
+        
+        c.setReceivedOn((LocalDate) data[row][0]);
+        c.setTheSource((String) data[row][1]);
+        c.setReference((String) data[row][2]);
+            
+        c.setDetails((String) data[row][3]);
+                
+        c.setThePriority((String) data[row][4]);
+                
+        c.setTheStatus((String) data[row][5]);
+        
+        if (data[row][6] != null) c.setClosedOn((LocalDate) data[row][6]);
+        
+        return c;
+        
+    }
+    
     public void updateData() throws Exception {
+        
+        System.out.println("Update data");
         
         serviceInterface = new ServiceInterface();
         
@@ -80,12 +103,14 @@ public class ComplaintData extends AbstractTableModel {
             data[x][4] = c.getThePriority();
             data[x][5] = c.getTheStatus();
             data[x][6] = c.getClosedOn();
-            data[x][7] = "Edit";
+            
             
             x++;
             
         }
         fireTableDataChanged( );
+        
+        
         
     }
     

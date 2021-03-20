@@ -5,18 +5,25 @@
  */
 package com.reedmanit.compliantsystem.ui;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 /**
  *
  * @author paul
  */
 public class Main extends javax.swing.JFrame {
-    
+
     ListSelectionModel listSelectionModel;
+    ComplaintData theData;
+    SharedListSelectionHandler tableSelection;
+    CaseDialog editCase;
 
     /**
      * Creates new form Main
@@ -39,6 +46,9 @@ public class Main extends javax.swing.JFrame {
         caseTabPane = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         complaintTable = new javax.swing.JTable();
+        jPanel2 = new javax.swing.JPanel();
+        editButton = new javax.swing.JButton();
+        newButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openMenuItem = new javax.swing.JMenuItem();
@@ -67,24 +77,79 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        ComplaintData theData = new ComplaintData();
+        theData = new ComplaintData();
+        tableSelection = new SharedListSelectionHandler();
         complaintTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
         complaintTable.setModel(theData);
-        //listSelectionModel = complaintTable.getSelectionModel();
-        //listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        //listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
-        //complaintTable.setSelectionModel(listSelectionModel);
+        listSelectionModel = complaintTable.getSelectionModel();
+        listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listSelectionModel.addListSelectionListener(tableSelection);
+        complaintTable.setSelectionModel(listSelectionModel);
         complaintTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
         //
-        complaintTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        complaintTable.getColumn("Edit").setCellRenderer(new ButtonRenderer());
-        complaintTable.getColumn("Edit").setCellEditor(new ButtonEditor(new JCheckBox()));
+        theData.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent emt) {
+                System.out.println("Table Event");
+                try {
+                    //theData.updateData();
+                    complaintTable.setModel(theData);
+                } catch (Exception e) {
+                    System.out.println(e.toString());
+                }
+
+            }
+        });
+        complaintTable.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                complaintTablePropertyChange(evt);
+            }
+        });
         jScrollPane1.setViewportView(complaintTable);
 
         caseTabPane.addTab("My Cases", jScrollPane1);
 
         desktopPane.add(caseTabPane);
-        caseTabPane.setBounds(10, 30, 850, 370);
+        caseTabPane.setBounds(10, 100, 850, 370);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Toolbar"));
+
+        editButton.setText("Edit");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
+        newButton.setText("New");
+        newButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(31, 31, 31)
+                .addComponent(editButton)
+                .addGap(18, 18, 18)
+                .addComponent(newButton)
+                .addContainerGap(55, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(editButton)
+                    .addComponent(newButton))
+                .addContainerGap())
+        );
+
+        desktopPane.add(jPanel2);
+        jPanel2.setBounds(10, 10, 220, 70);
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
@@ -153,13 +218,13 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 878, Short.MAX_VALUE)
+            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 893, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(desktopPane, javax.swing.GroupLayout.PREFERRED_SIZE, 486, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 46, Short.MAX_VALUE))
+                .addComponent(desktopPane, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 11, Short.MAX_VALUE))
         );
 
         pack();
@@ -168,6 +233,27 @@ public class Main extends javax.swing.JFrame {
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
+
+    private void complaintTablePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_complaintTablePropertyChange
+        // TODO add your handling code here:
+        System.out.println("Property event");
+    }//GEN-LAST:event_complaintTablePropertyChange
+
+    private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+        // TODO add your handling code here:
+        editCase = new CaseDialog(this, false, theData);
+        
+    }//GEN-LAST:event_newButtonActionPerformed
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        // TODO add your handling code here:
+        System.out.println(theData.getValueAtRow(tableSelection.getSelectedRow()));
+
+        editCase = new CaseDialog(this, false, theData.getValueAtRow(tableSelection.getSelectedRow()), theData);
+        
+        
+
+    }//GEN-LAST:event_editButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -203,19 +289,26 @@ public class Main extends javax.swing.JFrame {
             }
         });
     }
+
     class SharedListSelectionHandler implements ListSelectionListener {
+
+        int row = 0;
+
         @Override
         public void valueChanged(ListSelectionEvent e) {
             System.out.println("Row selected !!");
-            ListSelectionModel lsm = (ListSelectionModel)e.getSource();
-            
-            int firstIndex = e.getFirstIndex();
-            int lastIndex = e.getLastIndex();
-            
-            System.out.println("first " + firstIndex);
+            ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+
+            row = e.getFirstIndex();
+
+            System.out.println("row number " + row);
+
         }
 
-        
+        public int getSelectedRow() {
+            return row;
+        }
+
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -227,13 +320,16 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JDesktopPane desktopPane;
+    private javax.swing.JButton editButton;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JDialog jDialog1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JButton newButton;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;

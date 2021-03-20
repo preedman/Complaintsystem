@@ -5,6 +5,7 @@
  */
 package com.reedmanit.compliantsystem.ui;
 
+import com.reedmanit.casedomain.cases.Complaint;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,4 +58,15 @@ public class ComplaintDataTest {
         }
     }
     
+    @Test
+    public void testRowData() throws Exception {
+        System.out.println("getRowData");
+        ComplaintData instance = new ComplaintData();
+        
+        instance.updateData();
+        
+        Complaint c = instance.getValueAtRow(1);
+        
+        System.out.println(c.toString());
+    }
 }

@@ -5,18 +5,67 @@
  */
 package com.reedmanit.compliantsystem.ui;
 
+import com.reedmanit.casedomain.cases.Complaint;
+import com.reedmanit.complaintsystem.integration.ServiceInterface;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author paul
  */
-public class EditCase extends javax.swing.JDialog {
+public class CaseDialog extends javax.swing.JDialog {
+    
+    ServiceInterface serviceInterface;
+    Complaint theComplaint;
+    boolean editMode = false;
+    boolean newMode = false;
+    ComplaintData tableModel;
 
     /**
      * Creates new form EditCase
      */
-    public EditCase(java.awt.Frame parent, boolean modal) {
+    public CaseDialog(java.awt.Frame parent, boolean modal, ComplaintData tm) {
         super(parent, modal);
+        newMode = true;
+        tableModel = tm;
+        serviceInterface = new ServiceInterface();
         initComponents();
+        this.setVisible(true);
+    }
+    
+    public CaseDialog(java.awt.Frame parent, boolean modal, Complaint c, ComplaintData tm) {
+        super(parent, modal);
+        editMode = true;
+        tableModel = tm;
+        serviceInterface = new ServiceInterface();
+        theComplaint = c;
+        initComponents();
+        setUpScreen(c);
+        this.setVisible(true);
+    }
+    
+    private void setUpScreen(Complaint c) {
+        ZoneId defaultZoneId = ZoneId.systemDefault();
+        Date receivedDate = Date.from(c.getReceivedOn().atStartOfDay(defaultZoneId).toInstant());
+        receivedOnCalendar.setDate(receivedDate);
+        
+        sourceCombo.setSelectedItem(c.getTheSource());
+        
+        referenceTF.setText(c.getReference());
+        detailsTA.setText(c.getDetails());
+        
+        priorityCombo.setSelectedItem(c.getThePriority());
+        
+        statusCombo.setSelectedItem(c.getTheStatus());
+        
+        if (c.getClosedOn() != null ) {
+            Date closedOnDate = Date.from(c.getClosedOn().atStartOfDay(defaultZoneId).toInstant());
+            closedOnCalendar.setDate(closedOnDate);
+        }
     }
 
     /**
@@ -30,22 +79,22 @@ public class EditCase extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jDateChooser1 = new com.toedter.calendar.JDateChooser();
+        receivedOnCalendar = new com.toedter.calendar.JDateChooser();
         jLabel2 = new javax.swing.JLabel();
         sourceCombo = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        referenceTF = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        detailsTA = new javax.swing.JTextArea();
         jLabel5 = new javax.swing.JLabel();
         priorityCombo = new javax.swing.JComboBox<>();
         jLabel6 = new javax.swing.JLabel();
         statusCombo = new javax.swing.JComboBox<>();
         jLabel7 = new javax.swing.JLabel();
-        jDateChooser2 = new com.toedter.calendar.JDateChooser();
+        closedOnCalendar = new com.toedter.calendar.JDateChooser();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        submitButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -59,17 +108,17 @@ public class EditCase extends javax.swing.JDialog {
 
         jLabel3.setText("Reference");
 
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        referenceTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                referenceTFActionPerformed(evt);
             }
         });
 
         jLabel4.setText("Details");
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        detailsTA.setColumns(20);
+        detailsTA.setRows(5);
+        jScrollPane1.setViewportView(detailsTA);
 
         jLabel5.setText("Priority");
 
@@ -88,7 +137,12 @@ public class EditCase extends javax.swing.JDialog {
             }
         });
 
-        jButton2.setText("Submit");
+        submitButton.setText("Submit");
+        submitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -106,21 +160,23 @@ public class EditCase extends javax.swing.JDialog {
                     .addComponent(jLabel7))
                 .addGap(43, 43, 43)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jDateChooser2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jDateChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(sourceCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(statusCombo, javax.swing.GroupLayout.Alignment.LEADING, 0, 76, Short.MAX_VALUE)
-                        .addComponent(priorityCombo, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jTextField1))
+                    .addComponent(referenceTF)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(sourceCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(statusCombo, javax.swing.GroupLayout.Alignment.LEADING, 0, 76, Short.MAX_VALUE)
+                                .addComponent(priorityCombo, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(receivedOnCalendar, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(closedOnCalendar, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addGap(24, 24, 24))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2)
+                .addComponent(submitButton)
                 .addGap(19, 19, 19))
         );
         jPanel1Layout.setVerticalGroup(
@@ -128,7 +184,7 @@ public class EditCase extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(receivedOnCalendar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addGap(20, 20, 20)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -137,7 +193,7 @@ public class EditCase extends javax.swing.JDialog {
                 .addGap(26, 26, 26)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(referenceTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(33, 33, 33)
@@ -156,11 +212,11 @@ public class EditCase extends javax.swing.JDialog {
                 .addGap(30, 30, 30)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel7)
-                    .addComponent(jDateChooser2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(closedOnCalendar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(submitButton))
                 .addContainerGap())
         );
 
@@ -188,9 +244,40 @@ public class EditCase extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void referenceTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_referenceTFActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_referenceTFActionPerformed
+
+    private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+        // TODO add your handling code here:
+        
+            theComplaint = new Complaint();
+        
+            Date r = receivedOnCalendar.getDate();
+            LocalDate d = r.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        
+            theComplaint.setReceivedOn(d);
+        
+            theComplaint.setTheSource((String) sourceCombo.getSelectedItem());
+        
+            theComplaint.setDetails(detailsTA.getText());
+        
+            theComplaint.setReference(referenceTF.getText());
+        
+            theComplaint.setThePriority((String) priorityCombo.getSelectedItem());
+        
+            theComplaint.setTheStatus((String) statusCombo.getSelectedItem());
+        
+            try {
+                serviceInterface.save(theComplaint);
+                tableModel.updateData();
+                System.out.println("Saved");
+            } catch (Exception ex) {
+                Logger.getLogger(CaseDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+       
+        
+    }//GEN-LAST:event_submitButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -198,10 +285,9 @@ public class EditCase extends javax.swing.JDialog {
    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.toedter.calendar.JDateChooser closedOnCalendar;
+    private javax.swing.JTextArea detailsTA;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private com.toedter.calendar.JDateChooser jDateChooser1;
-    private com.toedter.calendar.JDateChooser jDateChooser2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -211,10 +297,11 @@ public class EditCase extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JComboBox<String> priorityCombo;
+    private com.toedter.calendar.JDateChooser receivedOnCalendar;
+    private javax.swing.JTextField referenceTF;
     private javax.swing.JComboBox<String> sourceCombo;
     private javax.swing.JComboBox<String> statusCombo;
+    private javax.swing.JButton submitButton;
     // End of variables declaration//GEN-END:variables
 }
